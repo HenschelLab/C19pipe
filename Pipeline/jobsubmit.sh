@@ -8,8 +8,5 @@ module load java
 module load bwa
 module load python
 
-bsub < bsubmaster_4genomes.sh
-#bsub < bsubmaster_missingBam.sh
-#bsub < bsubmasterRefTest.sh
-##bsub < bsubmaster_reftest.sh
-##bsub < bsubmasterRefTest.sh
+bsub < bsubmaster.sh
+

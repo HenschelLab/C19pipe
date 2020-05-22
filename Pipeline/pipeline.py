@@ -11,6 +11,7 @@ import time
 ## scratch partition is writable for script owner and has enough space
 ## assuming trimmomatic produces gzipped fastq files! (*.fastq.gz)
 ## Lane information is in the file name like this: ..._L001_...
+## expects java to be in PATH, on HPC make sure to load module java, bwa, see jobsumbit.sh
 
 ## Reference genome must be indexed (bwa -index)
 
@@ -404,6 +405,8 @@ if __name__ == "__main__":
     lastSuccJobIdx = pipe.getLastCheckpoint() if restartFromCheckpoint else -1
    
     print ("lastSuccJobIdx: %s"%lastSuccJobIdx)
+
+    pipe.fastQC(pipe.dirs['outdir'], pipe.dirs['initfastqOutdir'])
     if False:
 
         if pipelineOrder.index('trimming') > lastSuccJobIdx:
