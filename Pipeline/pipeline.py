@@ -68,7 +68,7 @@ class Pipeline:
 
         print("Sample: %s"%self.sample)
         sys.stdout.flush()
-        self.outdir = f'{outdir}/{sample}'
+        self.outdir = self.rawDataDir
         self.dirs = {'outdir' : self.outdir,
                      'initfastqOutdir' : f'{self.outdir}/FastQCinit',
                      'fastqOutdir' : f'{self.outdir}/FastQC',
