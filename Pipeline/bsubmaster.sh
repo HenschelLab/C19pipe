@@ -2,8 +2,8 @@
 #BSUB -q general                                                                                                                        
 #BSUB -W 48:00                                                                                                                          
 
-#BSUB -o JobOutputs/sars2seq.%I.%J.out
-#BSUB -e JobOutputs/sars2seq.%I.%J.err
+#BSUB -o Joboutputs/sars2seq.%I.%J.out
+#BSUB -e Joboutputs/sars2seq.%I.%J.err
 #BSUB -J sars2seq[2-24]
 
 
