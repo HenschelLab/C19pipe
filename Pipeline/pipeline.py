@@ -26,27 +26,27 @@ import time
 
 def extractLane(fname): return re.findall('_L\d\d\d_', os.path.basename(fname))[-1].strip()[-2]
 
-if True:
-    basedir = "/research/genomicds1/Covid19ccp/"
-    outdir = f"{basedir}Results"    
-    tmpdir = f"{basedir}/tmp"    
-    datadir = f"{basedir}/Data"
 
-    applicationDir = '/research/btc_bioinformatic/operations/'
-    rawData = datadir
+basedir = "/research/genomicds1/Covid19ccp/"
+outdir = f"{basedir}Results"
+tmpdir = f"{basedir}/tmp"
+datadir = f"{basedir}/Data"
 
-    jobOutputDir = '%s/Pipeline/JobOutputs' % applicationDir
+applicationDir = '/research/btc_bioinformatic/operations/'
+rawData = datadir
 
-    fastqcDir = "%s/FastQC" % applicationDir
-    picardDir = '%s/picard/build/libs' % applicationDir
-    TrimmaticsDir = "%s/Trimmomatic-0.36" % applicationDir
-    illuminaAdapterFile = '%s/AuxData/TruSeq3-PE.fa' % applicationDir
-    qualimapDir = "%s/qualimap_v2.2.1" % applicationDir
-    rawDataDir = rawData + "/Batch%s" 
+jobOutputDir = f'{basedir}/Joboutputs'
 
-    refDirLookup = {'hg19':'%s/data_masdar/ucsc.hg19.fasta' % applicationDir, ## not a good location
-                    'hg38':'%s/AuxData/hg38/Homo_sapiens_assembly38.fasta' % applicationDir,
-                    'ncov19': f'{datadir}/ncovWuhanHu.fa'}
+fastqcDir = "%s/FastQC" % applicationDir
+picardDir = '%s/picard/build/libs' % applicationDir
+TrimmaticsDir = "%s/Trimmomatic-0.36" % applicationDir
+illuminaAdapterFile = '%s/AuxData/TruSeq3-PE.fa' % applicationDir
+qualimapDir = "%s/qualimap_v2.2.1" % applicationDir
+rawDataDir = rawData + "/Batch%s"
+
+refDirLookup = {'hg19':'%s/data_masdar/ucsc.hg19.fasta' % applicationDir, ## not a good location
+                'hg38':'%s/AuxData/hg38/Homo_sapiens_assembly38.fasta' % applicationDir,
+                'ncov19': f'{datadir}/ncovWuhanHu.fa'}
 
 pipelineOrder = ['trimming', 'fastqc', 'bwa', 'SortSam', 'MergeBam', 'MarkDuplicates',
                  'qualimap', 'BuildBamIndex', 'BaseRecalibrator', 'ApplyBQSR', 'HaplotypeCaller']
@@ -54,34 +54,28 @@ class Pipeline:
 
     ## Introduce Checkpoints for automated pipeline reruns
 
-    def __init__(self, sampleNr=0, batch=0, refShort='hg19', singleLane=True, cleanup='asYouGo', sample=None, picardCmd='local'):
+    def __init__(self, sample, refShort='ncov19', singleLane=False, cleanup='asYouGo', sample=None, picardCmd='local'):
         self.cleanup = cleanup ## Possible str values: asYouGo, atTheEnd, none
         self.refShort = refShort
         self.ref=refDirLookup[refShort]
-        self.sampleNr = sampleNr
+
         self.singleLane = singleLane
         self.completedJobs = []
+        self.sample = sample
 
-        if singleLane: ## Second Batch, different naming conventions
-            if sample is None:
-                self.rawDataDir = sorted(glob.glob('%s/1*'%rawDataDir))[sampleNr-1]
-                self.sample = os.path.basename(self.rawDataDir)
-            else:
-                self.sample = sample
-                self.rawDataDir = '%s/%s'%(rawDataDir%batch,sample)
-        else: ## Local (Mariam's) samples, NextSeq 500 
-            self.rawDataDir = f'{datadir}/{sampleNr}'
-            self.sample = sampleNr # self.determineSampleID(self.rawDataDir)
+        ## Local samples, NextSeq 500
+        self.rawDataDir = f'{datadir}/{sample}'
+
         print("Sample: %s"%self.sample)
         sys.stdout.flush()
-        self.outdir = '%s/%s' % (outdir, self.sample)
+        self.outdir = f'{outdir}/{sample}'
         self.dirs = {'outdir' : self.outdir,
-                     'initfastqOutdir' : '%s/FastQCinit'%self.outdir,
-                     'fastqOutdir' : '%s/FastQC'%self.outdir,
-                     'qualimapOutdir' : '%s/Qualimap'%self.outdir,
-                     'trimOutdir' : '%s/Trim'%self.outdir,
-                     'alignOutdir' : '%s/Alignment'%self.outdir,
-                     'gatkOutdir' : '%s/GATK'%self.outdir}
+                     'initfastqOutdir' : f'{self.outdir}/FastQCinit',
+                     'fastqOutdir' : f'{self.outdir}/FastQC',
+                     'qualimapOutdir' : f'{self.outdir}/Qualimap',
+                     'trimOutdir' : f'{self.outdir}/Trim',
+                     'alignOutdir' : f'{self.outdir}/Alignment',
+                     'gatkOutdir' : f'{self.outdir}/GATK'}
 
         for location in self.dirs.values():
             if not os.path.exists(location): os.mkdir(location)
