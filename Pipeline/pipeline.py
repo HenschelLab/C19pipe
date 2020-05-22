@@ -54,7 +54,7 @@ class Pipeline:
 
     ## Introduce Checkpoints for automated pipeline reruns
 
-    def __init__(self, sample, refShort='ncov19', singleLane=False, cleanup='asYouGo', picardCmd='local'):
+    def __init__(self, sample, refShort='ncov19', singleLane=False, cleanup=False, picardCmd='local'):
         self.cleanup = cleanup ## Possible str values: asYouGo, atTheEnd, none
         self.refShort = refShort
         self.ref=refDirLookup[refShort]
@@ -394,7 +394,6 @@ def pptime(s):
     return '%02d:%02d:%02d' % (hours, minutes, seconds)
 
 if __name__ == "__main__":
-    
 
     sampleNr, sampleFile = sys.argv[-2:]
     sample = [line.strip() for line in open(sampleFile)][int(sampleNr)+1]
