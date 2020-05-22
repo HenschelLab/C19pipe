@@ -405,7 +405,7 @@ if __name__ == "__main__":
     lastSuccJobIdx = pipe.getLastCheckpoint() if restartFromCheckpoint else -1
    
     print ("lastSuccJobIdx: %s"%lastSuccJobIdx)
-    if True:
+    if False:
 
         if pipelineOrder.index('trimming') > lastSuccJobIdx:
             pipe.trim()  #pattern="*L002*.fastq.gz") ## example for just trimming lane2 files
