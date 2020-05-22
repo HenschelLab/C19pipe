@@ -398,7 +398,7 @@ def pptime(s):
 if __name__ == "__main__":
 
     sampleNr, sampleFile = sys.argv[-2:]
-    sample = [line.strip() for line in open(sampleFile)][int(sampleNr)+1]
+    sample = [line.strip() for line in open(sampleFile)][int(sampleNr)-1]
 
     pipe = Pipeline(sample=sample, refShort='ncov19')     #refShort='hg38'
 
