@@ -40,7 +40,7 @@ jobOutputDir = f'{basedir}/Joboutputs'
 
 fastqcDir = "%s/FastQC" % applicationDir
 picardDir = '%s/picard/build/libs' % applicationDir
-TrimmaticsDir = "%s/Trimmomatic-0.36" % applicationDir
+TrimmomaticsDir = "%s/Trimmomatic-0.36" % applicationDir
 #illuminaAdapterFile = '%s/AuxData/TruSeq3-PE.fa' % applicationDir
 illuminaAdapterFile = f'{datadir}/truseq.fa'
 qualimapDir = "%s/qualimap_v2.2.1" % applicationDir
@@ -134,7 +134,7 @@ class Pipeline:
                               '%s/%s.paired.fastq.gz' % (self.dirs['trimOutdir'], outRevBasename),
                               '%s/%s.unpaired.fastq.gz' % (self.dirs['trimOutdir'], outRevBasename),
                               'ILLUMINACLIP:%s:2:30:10' % illuminaAdapterFile,
-                              'SLIDINGWINDOW:4:20', 'MINLEN:50']
+                              'SLIDINGWINDOW:4:20', 'MINLEN:50' ]
             job = Job(trimmomaticCmd, run=False)
             job.startProcess()
             jobs.append(job)
