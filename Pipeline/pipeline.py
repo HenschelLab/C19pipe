@@ -395,14 +395,12 @@ def pptime(s):
 
 if __name__ == "__main__":
     
-    if len(sys.argv[1]) < 3: ## interprete small numbers as job ids
-        sampleNr = int(sys.argv[1])
-        pipe = Pipeline(sampleNr=sampleNr, refShort='hg19', singleLane=False) #refShort='hg38'
-    else: ## interprete 5 or 6digit numbers as sample ids## Also provide batch!!!
-        sample, batch = sys.argv[-2:]
-        pipe = Pipeline(sample=sample, batch=batch, refShort='hg19')     #refShort='hg38'
 
-    sample = sys.argv
+    sampleNr, sampleFile = sys.argv[-2:]
+    sample = [line.strip() for line in open(sampleFile)][int(sampleNr)+1]
+
+    pipe = Pipeline(sample=sample, refShort='ncov19')     #refShort='hg38'
+
     restartFromCheckpoint = False ## set to False, if you want to start from the beginning
     lastSuccJobIdx = pipe.getLastCheckpoint() if restartFromCheckpoint else -1
    
@@ -414,6 +412,7 @@ if __name__ == "__main__":
             pipe.report()
             pipe.fastQC(pipe.dirs['trimOutdir'], pipe.dirs['fastqOutdir'])
 
+    if False:
         ## BWA
         if pipelineOrder.index('bwa') > lastSuccJobIdx:
             pipe.align(cleanup=False)
@@ -436,8 +435,6 @@ if __name__ == "__main__":
         if pipelineOrder.index('BuildBamIndex') > lastSuccJobIdx:
             pipe.buildBamIndex()
             pipe.report()
-
-    if False:            
         ## GATK
         if pipelineOrder.index('BaseRecalibrator') > lastSuccJobIdx:
             pipe.baseRecalibrator()
