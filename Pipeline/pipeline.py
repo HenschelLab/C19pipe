@@ -407,8 +407,8 @@ if __name__ == "__main__":
    
     print ("lastSuccJobIdx: %s"%lastSuccJobIdx)
 
-    pipe.fastQC(pipe.dirs['outdir'], pipe.dirs['initfastqOutdir'])
-    if False:
+    #pipe.fastQC(pipe.dirs['outdir'], pipe.dirs['initfastqOutdir'])
+    if True:
 
         if pipelineOrder.index('trimming') > lastSuccJobIdx:
             pipe.trim()  #pattern="*L002*.fastq.gz") ## example for just trimming lane2 files
