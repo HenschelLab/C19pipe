@@ -7,4 +7,4 @@
 #BSUB -J genomeAnno[2-24]
 
 echo "Job: ${LSB_JOBINDEX}"
-python pipeline_Batch2.py ${LSB_JOBINDEX} 4
+python pipeline.py ${LSB_JOBINDEX} /research/genomicds1/Covid19ccp/Data/samples.txt
