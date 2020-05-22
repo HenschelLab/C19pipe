@@ -41,7 +41,8 @@ jobOutputDir = f'{basedir}/Joboutputs'
 fastqcDir = "%s/FastQC" % applicationDir
 picardDir = '%s/picard/build/libs' % applicationDir
 TrimmaticsDir = "%s/Trimmomatic-0.36" % applicationDir
-illuminaAdapterFile = '%s/AuxData/TruSeq3-PE.fa' % applicationDir
+#illuminaAdapterFile = '%s/AuxData/TruSeq3-PE.fa' % applicationDir
+illuminaAdapterFile = f'{datadir}/truseq.fa'
 qualimapDir = "%s/qualimap_v2.2.1" % applicationDir
 rawDataDir = rawData + "/Batch%s"
 
