@@ -54,7 +54,7 @@ class Pipeline:
 
     ## Introduce Checkpoints for automated pipeline reruns
 
-    def __init__(self, sample, refShort='ncov19', singleLane=False, cleanup='asYouGo', sample=None, picardCmd='local'):
+    def __init__(self, sample, refShort='ncov19', singleLane=False, cleanup='asYouGo', picardCmd='local'):
         self.cleanup = cleanup ## Possible str values: asYouGo, atTheEnd, none
         self.refShort = refShort
         self.ref=refDirLookup[refShort]
