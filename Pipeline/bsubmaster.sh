@@ -4,7 +4,7 @@
 
 #BSUB -o Joboutputs/sars2seq.%I.%J.out
 #BSUB -e Joboutputs/sars2seq.%I.%J.err
-#BSUB -J sars2seq[1-24]
+#BSUB -J sars2seq[1-25]
 
 
 module load gatk
