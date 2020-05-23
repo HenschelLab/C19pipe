@@ -451,13 +451,13 @@ if __name__ == "__main__":
 ####
         ##
         if pipelineOrder.index('HaplotypeCaller') > lastSuccJobIdx:
-            pipe.haplotypeCaller(filetype='vcf', skipBQSR=True, ploidy=1)
+            pipe.haplotypeCaller(filetype='gvcf', skipBQSR=True, ploidy=1)
             pipe.report()
 
         ## Before variant recal: need to do (hierarchical) combineGVCFs, GenotypeGVCFs -> VCF
         ## see individual shell scripts: varRecal combineGVCFs.sh (runs into Walltime!!! -> do it hierarchically, see )
         pipe.filetype='gvcf'
         pipe.zipped = '.gz'
-        pipe.variantRecalibrator() ## only works on proper VCF!!!
+        #pipe.variantRecalibrator() ## only works on proper VCF!!!
         pipe.report()
     
