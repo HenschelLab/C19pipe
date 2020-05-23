@@ -450,7 +450,7 @@ if __name__ == "__main__":
 ####
         ##
         if pipelineOrder.index('HaplotypeCaller') > lastSuccJobIdx:
-            pipe.haplotypeCaller(filetype='vcf', skippedBQSR=True)
+            pipe.haplotypeCaller(filetype='vcf', skipBQSR=True)
             pipe.report()
 
         ## Before variant recal: need to do (hierarchical) combineGVCFs, GenotypeGVCFs -> VCF
