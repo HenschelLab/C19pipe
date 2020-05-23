@@ -250,7 +250,7 @@ class Pipeline:
         self.completedJobs.append(Job(recCmd, run=True))
 
     ## Sorted_merged_dedup_BQSR.bam ->  $GATKdir/<sample>_HaplotypeCaller.vcf
-    def haplotypeCaller(self, jvmSpace=32, filetype='gvcf', compress=True, skipBQSR=False):
+    def haplotypeCaller(self, jvmSpace=32, filetype='gvcf', compress=True, skipBQSR=False, ploidy=None):
         self.filetype = filetype ## remember to set the filetype if haplotypeCaller is bypassed/omitted!!
         pattern = "*_Merged_dedup.bam" if skipBQSR else "*_BQSR.bam"
         bamFile = self.findFiles(self.dirs['alignOutdir'], pattern=pattern)[0]
@@ -264,6 +264,7 @@ class Pipeline:
                   '-I', bamFile, '-O', output,
                   #'--dbsnp', dbsnp,
                   '--genotyping-mode', 'DISCOVERY']#-stand_call_conf 30
+        if ploidy: recCmd.append(f'-ploidy {ploidy}')
         if filetype=='gvcf':
             recCmd.append('-ERC GVCF') ## this seems to cause trouble: "Values for DP annotation not detected for ANY training variant in the input callset. VariantAnnotator may be used to add these annotations" but could also be due to sparse genome in DP
         self.completedJobs.append(Job(recCmd, run=True, mark4del=(bamFile, output)))
@@ -450,7 +451,7 @@ if __name__ == "__main__":
 ####
         ##
         if pipelineOrder.index('HaplotypeCaller') > lastSuccJobIdx:
-            pipe.haplotypeCaller(filetype='vcf', skipBQSR=True)
+            pipe.haplotypeCaller(filetype='vcf', skipBQSR=True, ploidy=1)
             pipe.report()
 
         ## Before variant recal: need to do (hierarchical) combineGVCFs, GenotypeGVCFs -> VCF
