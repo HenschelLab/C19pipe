@@ -250,11 +250,10 @@ class Pipeline:
         self.completedJobs.append(Job(recCmd, run=True))
 
     ## Sorted_merged_dedup_BQSR.bam ->  $GATKdir/<sample>_HaplotypeCaller.vcf
-    def haplotypeCaller(self, jvmSpace=32, filetype='gvcf', compress=True):
+    def haplotypeCaller(self, jvmSpace=32, filetype='gvcf', compress=True, skipBQSR=False):
         self.filetype = filetype ## remember to set the filetype if haplotypeCaller is bypassed/omitted!!
-#        bamFile = self.findFiles(self.dirs['alignOutdir'], pattern="*_BQSR.bam")[0]
-#!!!!!!!!!!!!!!!!! Using different bam (skipping BQSR for comparing #variants vs UAE ref genome
-        bamFile = self.findFiles(self.dirs['alignOutdir'], pattern="*_Merged_dedup.bam")[0] ## CHANGE!!!        
+        pattern = "*_Merged_dedup.bam" if skipBQSR else "*_BQSR.bam"
+        bamFile = self.findFiles(self.dirs['alignOutdir'], pattern=pattern)[0]
         output = '%s/%s_HaplotypeCaller.%s' %(self.dirs['gatkOutdir'], self.sample, filetype)
         if compress:
             output += '.gz'
@@ -263,13 +262,13 @@ class Pipeline:
         recCmd = ['gatk', '--java-options', '"-Xmx%sG"'%jvmSpace, 'HaplotypeCaller',
                   '-R', self.ref,
                   '-I', bamFile, '-O', output,
-                  '--dbsnp', dbsnp, '--genotyping-mode', 'DISCOVERY']#-stand_call_conf 30
+                  #'--dbsnp', dbsnp,
+                  '--genotyping-mode', 'DISCOVERY']#-stand_call_conf 30
         if filetype=='gvcf':
             recCmd.append('-ERC GVCF') ## this seems to cause trouble: "Values for DP annotation not detected for ANY training variant in the input callset. VariantAnnotator may be used to add these annotations" but could also be due to sparse genome in DP
         self.completedJobs.append(Job(recCmd, run=True, mark4del=(bamFile, output)))
 
-    ## Sorted_merged_dedup_BQSR.vcf ->  Sorted_merged_dedup_BQSR.{recal.vcf, tranches, rplots.R} 
-    ## couldnt test this on "Genome 99": to few data points
+    ## Sorted_merged_dedup_BQSR.vcf ->  Sorted_merged_dedup_BQSR.{recal.vcf, tranches, rplots.R}
     ## TODO: Deal with gzipped files!
     def variantRecalibrator(self, jvmSpace=32, mode='SNP', pattern="*_HaplotypeCaller"):
         vcfFile = self.findFiles(self.dirs['gatkOutdir'], pattern=pattern + '.' + self.filetype + self.zipped)[0]
@@ -415,7 +414,7 @@ if __name__ == "__main__":
             pipe.report()
             pipe.fastQC(pipe.dirs['trimOutdir'], pipe.dirs['fastqOutdir'])
 
-    if True:
+
         ## BWA
         if pipelineOrder.index('bwa') > lastSuccJobIdx:
             pipe.align(cleanup=False)
@@ -439,6 +438,7 @@ if __name__ == "__main__":
             pipe.buildBamIndex()
             pipe.report()
         ## GATK
+    if False: ## skip this for viruses, to be elaborated
         if pipelineOrder.index('BaseRecalibrator') > lastSuccJobIdx:
             pipe.baseRecalibrator()
             pipe.report()
@@ -446,14 +446,13 @@ if __name__ == "__main__":
         if pipelineOrder.index('ApplyBQSR') > lastSuccJobIdx:
             pipe.applyBQSR()
             pipe.report()
-
+    if True:
 ####
         ##
         if pipelineOrder.index('HaplotypeCaller') > lastSuccJobIdx:
-            pipe.haplotypeCaller(filetype='vcf')
+            pipe.haplotypeCaller(filetype='vcf', skippedBQSR=True)
             pipe.report()
-            
-    if False:
+
         ## Before variant recal: need to do (hierarchical) combineGVCFs, GenotypeGVCFs -> VCF
         ## see individual shell scripts: varRecal combineGVCFs.sh (runs into Walltime!!! -> do it hierarchically, see )
         pipe.filetype='gvcf'
