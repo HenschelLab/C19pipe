@@ -415,7 +415,7 @@ if __name__ == "__main__":
             pipe.report()
             pipe.fastQC(pipe.dirs['trimOutdir'], pipe.dirs['fastqOutdir'])
 
-
+    if True:
         ## BWA
         if pipelineOrder.index('bwa') > lastSuccJobIdx:
             pipe.align(cleanup=False)
