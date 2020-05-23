@@ -1,4 +1,5 @@
-#BSUB -n 12                                                                                                                             
+#!/usr/bin/env bash
+#BSUB -n 12
 #BSUB -q general                                                                                                                        
 #BSUB -W 48:00                                                                                                                          
 

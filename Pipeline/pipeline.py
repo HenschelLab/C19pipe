@@ -51,7 +51,7 @@ refDirLookup = {'hg19':'%s/data_masdar/ucsc.hg19.fasta' % applicationDir, ## not
                 'ncov19': f'{datadir}/ncovWuhanHu.fa'}
 
 pipelineOrder = ['trimming', 'fastqc', 'bwa', 'SortSam', 'MergeBam', 'MarkDuplicates',
-                 'qualimap', 'BuildBamIndex', 'BaseRecalibrator', 'ApplyBQSR', 'HaplotypeCaller']
+                 'qualimap', 'BuildBamIndex', 'BaseRecalibrator', 'ApplyBQSR', 'HaplotypeCaller', 'VariantFiltration']
 class Pipeline:
 
     ## Introduce Checkpoints for automated pipeline reruns
@@ -134,6 +134,7 @@ class Pipeline:
                               '%s/%s.paired.fastq.gz' % (self.dirs['trimOutdir'], outRevBasename),
                               '%s/%s.unpaired.fastq.gz' % (self.dirs['trimOutdir'], outRevBasename),
                               'ILLUMINACLIP:%s:2:30:10' % illuminaAdapterFile,
+                              'LEADING:6','TRAILING:3'
                               'SLIDINGWINDOW:4:20', 'MINLEN:50' ]
             job = Job(trimmomaticCmd, run=False)
             job.startProcess()
@@ -311,6 +312,38 @@ class Pipeline:
                   '--tranches-file', tranches_input,
                   '--mode ', mode]
         self.completedJobs.append(Job(recCmd, run=True))
+    def variantFiltration(self, jvmSpace=32, pattern="*_HaplotypeCaller", QD=2.0, FS=60., MQ=40, MQRankSum=-12.5, ReadPosRankSum=-8.0):
+        vcfFile = self.findFiles(self.dirs['gatkOutdir'], pattern=pattern + '.' + self.filetype + self.zipped)[0]
+        base = os.path.splitext(vcfFile)[0]
+        output = f'{base}_hardfilter.{self.filetype}{self.zipped}'
+        recCmd = ['gatk', '--java-options', f'"-Xmx{jvmSpace}G"', 'VariantFiltration', f'-R {self.ref}',
+                  f'-V {vcfFile}',
+                  f'--filterExpression "QD < {QD} || FS > {FS} || MQ < {MQ} || MQRankSum < {MQRankSum} || ReadPosRankSum < {ReadPosRankSum}"', ## parameterize
+                  '--filterName "my_snp_filter"', f'-o {output}']
+        self.completedJobs.append(Job(recCmd, run=True))
+        """java -jar GenomeAnalysisTK.jar \ 
+    -T VariantFiltration \ 
+    -R reference.fa \ 
+    -V raw_snps.vcf \ 
+    --filterExpression "QD < 2.0 || FS > 60.0 || MQ < 40.0 || MQRankSum < -12.5 || ReadPosRankSum < -8.0" \ 
+    --filterName "my_snp_filter" \ 
+    -o filtered_snps.vcf """
+
+    def vcf2fasta(self, pattern="*_hardfilter"):
+        vcfFile = self.findFiles(self.dirs['gatkOutdir'], pattern=pattern + '.' + self.filetype + self.zipped)[0]
+        base = os.path.splitext(vcfFile)[0]
+        output = f'{base}.fasta'
+        ## this tool is absent in 4.0.6 (WTF?), resorting to older version, hard coding jar path, so not to load conflicting GATK modules
+        recCmd = ["java", "-jar /apps/gatk/genomeanalysistk-3.2-2/GenomeAnalysisTK.jar", "-T FastaAlternateReferenceMaker",
+                  f"-R {self.ref}", f"-V {vcfFile}", "-o {output}"]
+
+
+        """ java -jar /apps/gatk/genomeanalysistk-3.2-2/GenomeAnalysisTK.jar -T FastaAlternateReferenceMaker \
+           -R reference.fasta \
+           -o output.fasta \
+           -V input.vcf \
+
+           [--snp-mask mask.vcf]"""
 
     def report(self, last=-1, stopOnFail=True): #use last=0 for all
         cleanup = (self.cleanup == 'asYouGo' and last==-1) or (self.cleanup == 'atTheEnd' and last==0)
@@ -325,6 +358,7 @@ class Pipeline:
             print ("[PIPE:] Job duration(s) in sec: %s" % [job.duration for job in jobs])
             print ("[PIPE:] Job return code(s): %s" % [job.returnCode for job in jobs])
         sys.stdout.flush()
+
 
     def getLastCheckpoint(self):
         from restartPipe import getLastCheckpoint
@@ -415,7 +449,7 @@ if __name__ == "__main__":
             pipe.report()
             pipe.fastQC(pipe.dirs['trimOutdir'], pipe.dirs['fastqOutdir'])
 
-    if True:
+    if False:
         ## BWA
         if pipelineOrder.index('bwa') > lastSuccJobIdx:
             pipe.align(cleanup=False)
@@ -451,13 +485,19 @@ if __name__ == "__main__":
 ####
         ##
         if pipelineOrder.index('HaplotypeCaller') > lastSuccJobIdx:
-            pipe.haplotypeCaller(filetype='gvcf', skipBQSR=True, ploidy=1)
+            pipe.haplotypeCaller(filetype='vcf', skipBQSR=True, ploidy=1)
             pipe.report()
 
         ## Before variant recal: need to do (hierarchical) combineGVCFs, GenotypeGVCFs -> VCF
         ## see individual shell scripts: varRecal combineGVCFs.sh (runs into Walltime!!! -> do it hierarchically, see )
-        pipe.filetype='gvcf'
+        pipe.filetype='vcf'
         pipe.zipped = '.gz'
         #pipe.variantRecalibrator() ## only works on proper VCF!!!
         pipe.report()
+
+    if True:
+        if pipelineOrder.index('VariantFiltration') > lastSuccJobIdx:
+            pipe.variantFiltration()
+            pipe.report()
+
     
