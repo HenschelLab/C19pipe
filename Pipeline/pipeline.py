@@ -318,8 +318,8 @@ class Pipeline:
         output = f'{base}_hardfilter.{self.filetype}{self.zipped}'
         recCmd = ['gatk', '--java-options', f'"-Xmx{jvmSpace}G"', 'VariantFiltration', f'-R {self.ref}',
                   f'-V {vcfFile}',
-                  f'--filterExpression "QD < {QD} || FS > {FS} || MQ < {MQ} || MQRankSum < {MQRankSum} || ReadPosRankSum < {ReadPosRankSum}"', ## parameterize
-                  '--filterName "my_snp_filter"', f'-o {output}']
+                  f'--filter-expression "QD < {QD} || FS > {FS} || MQ < {MQ} || MQRankSum < {MQRankSum} || ReadPosRankSum < {ReadPosRankSum}"', ## parameterize
+                  '--filter-name "my_snp_filter"', f'-o {output}']
         self.completedJobs.append(Job(recCmd, run=True))
         """java -jar GenomeAnalysisTK.jar \ 
     -T VariantFiltration \ 
