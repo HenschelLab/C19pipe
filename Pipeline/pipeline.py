@@ -51,7 +51,7 @@ refDirLookup = {'hg19':'%s/data_masdar/ucsc.hg19.fasta' % applicationDir, ## not
                 'ncov19': f'{datadir}/ncovWuhanHu.fa'}
 
 pipelineOrder = ['trimming', 'fastqc', 'bwa', 'SortSam', 'MergeBam', 'MarkDuplicates',
-                 'qualimap', 'BuildBamIndex', 'BaseRecalibrator', 'ApplyBQSR', 'HaplotypeCaller', 'VariantFiltration']
+                 'qualimap', 'BuildBamIndex', 'BaseRecalibrator', 'ApplyBQSR', 'HaplotypeCaller', 'VariantFiltration', 'vcf2fasta']
 class Pipeline:
 
     ## Introduce Checkpoints for automated pipeline reruns
