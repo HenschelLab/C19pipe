@@ -329,7 +329,7 @@ class Pipeline:
     --filterName "my_snp_filter" \ 
     -o filtered_snps.vcf """
 
-    def vcf2fasta(self, pattern="*_hardfilter"):
+    def vcf2fasta(self, pattern="*_HaplotypeCaller"):
         vcfFile = self.findFiles(self.dirs['gatkOutdir'], pattern=pattern + '.' + self.filetype + self.zipped)[0]
         base = os.path.splitext(vcfFile)[0]
         output = f'{base}.fasta'
