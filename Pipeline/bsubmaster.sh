@@ -14,4 +14,4 @@ module load java
 module load bwa
 
 echo "Job: ${LSB_JOBINDEX}"
-~/miniconda3/bin/python pipeline.py ${LSB_JOBINDEX} /research/genomicds1/Covid19ccp/Data/samples.txt
+~/miniconda3/bin/python pipeline.py ${LSB_JOBINDEX} /research/genomicds1/Covid19ccp/Data/samplesGood.txt

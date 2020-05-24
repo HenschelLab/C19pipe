@@ -333,9 +333,11 @@ class Pipeline:
         vcfFile = self.findFiles(self.dirs['gatkOutdir'], pattern=pattern + '.' + self.filetype + self.zipped)[0]
         base = os.path.splitext(vcfFile)[0]
         output = f'{base}.fasta'
+        recCmd = ["bcftools", 'consensus', f'-f {self.ref}', vcfFile, ' > ', output]
+        self.completedJobs.append(Job(recCmd, run=True))
         ## this tool is absent in 4.0.6 (WTF?), resorting to older version, hard coding jar path, so not to load conflicting GATK modules
-        recCmd = ["java", "-jar /apps/gatk/genomeanalysistk-3.2-2/GenomeAnalysisTK.jar", "-T FastaAlternateReferenceMaker",
-                  f"-R {self.ref}", f"-V {vcfFile}", "-o {output}"]
+        #recCmd = ["java", "-jar /apps/gatk/genomeanalysistk-3.2-2/GenomeAnalysisTK.jar", "-T FastaAlternateReferenceMaker",
+        #          f"-R {self.ref}", f"-V {vcfFile}", "-o {output}"]
 
 
         """ java -jar /apps/gatk/genomeanalysistk-3.2-2/GenomeAnalysisTK.jar -T FastaAlternateReferenceMaker \
@@ -495,7 +497,11 @@ if __name__ == "__main__":
         #pipe.variantRecalibrator() ## only works on proper VCF!!!
         pipe.report()
 
-    if True:
+        if pipelineOrder.index('vcf2fasta') > lastSuccJobIdx:
+            pipe.vcf2fasta()
+            pipe.report()
+
+    if False: # just continue with reasonable coverage samples (samplesGood.txt)
         if pipelineOrder.index('VariantFiltration') > lastSuccJobIdx:
             pipe.variantFiltration()
             pipe.report()
